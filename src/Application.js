@@ -6,52 +6,65 @@ import Result from './Result';
 import PizzaCalculator from './PizzaCalculator';
 import calculatePizzasNeeded from './lib/calculate-pizzas-needed';
 
-const initialState = {
-	numberOfPeople: 10,
-	slicesPerPerson: 2,
-};
+import { updateNumberOfPeople, updateSlicesPerPerson, reset } from './actions';
+import PizzaStore from './PizzaStore';
 
 
 
-const WithPizzaCalculations  = WrappedComponent => {
-	return class extends Component {
-		static displayName = `WithPizzaCalculations(${WrappedComponent.displayName ||WrappedComponent.name})`;
-		state = {...initialState};
+const WithPizzaCalculations = WrappedComponent => {
+    return class extends Component {
+        static displayName = `WithPizzaCalculations(${WrappedComponent.displayName ||WrappedComponent.name})`;
 
-		updateNumberOfPeople = event => {
-			const numberOfPeople = parseInt(event.target.value, 10);
-			this.setState({numberOfPeople});
-		};
+        state = PizzaStore.getState();
 
-		updateSlicesPerPerson = event => {
-			const slicesPerPerson = parseInt(event.target.value, 10);
-			this.setState({slicesPerPerson});
-		};
+        componentDidMount() {
+            PizzaStore.on('change', this.updateState);
+        }
 
-		reset = event => {
-			this.setState({...initialState});
-		};
+        componentWillUnmount() {
+            PizzaStore.off('change', this.updateState);
+        }
 
-		render () {
-			const {numberOfPeople, slicesPerPerson} = this.state;
-			const numberOfPizzas = calculatePizzasNeeded(
-				numberOfPeople,
-				slicesPerPerson,
-			);
+        updateState = () => {
+            this.setState(PizzaStore.getState());
+        }
 
-			return (
-				<WrappedComponent
-					numberOfPeople={numberOfPeople}
-					slicesPerPerson={slicesPerPerson}
-					updateSlicesPerPerson={this.updateSlicesPerPerson}
-					updateNumberOfPeople={this.updateNumberOfPeople}
-					numberOfPizzas={numberOfPizzas}
-					reset={this.reset}/>
-			);
-		}
-	};
-	// container.displayName =`WithPizzaCalculations(${WrappedComponent.displayName ||WrappedComponent.name})`;
-	// return container;
+        updateNumberOfPeople = event => {
+            const numberOfPeople = parseInt(event.target.value, 10);
+            updateNumberOfPeople(numberOfPeople);
+        };
+
+        updateSlicesPerPerson = event => {
+            const slicesPerPerson = parseInt(event.target.value, 10);
+            updateSlicesPerPerson(slicesPerPerson);
+        };
+
+        reset = event => {
+            reset();
+        };
+
+
+
+        render() {
+            const { numberOfPeople, slicesPerPerson } = this.state;
+            const numberOfPizzas = calculatePizzasNeeded(
+                numberOfPeople,
+                slicesPerPerson,
+            );
+
+            return ( <
+                WrappedComponent numberOfPeople = { numberOfPeople }
+                slicesPerPerson = { slicesPerPerson }
+                updateSlicesPerPerson = { this.updateSlicesPerPerson }
+                updateNumberOfPeople = { this.updateNumberOfPeople }
+                numberOfPizzas = { numberOfPizzas }
+                reset = { this.reset }
+                />
+            );
+        }
+    };
+    // container.displayName =`WithPizzaCalculations(${WrappedComponent.displayName ||WrappedComponent.name})`;
+    // return container;
 };
 
 
@@ -61,9 +74,9 @@ const WithPizzaCalculations  = WrappedComponent => {
 const PizzaContainer = WithPizzaCalculations(PizzaCalculator);
 
 export default class Application extends Component {
-	render() {
-		return (
-			<PizzaContainer/>
-		)
-	}
+    render() {
+        return ( <
+            PizzaContainer / >
+        )
+    }
 }
