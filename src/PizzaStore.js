@@ -7,6 +7,9 @@ const initialState = {
 };
 
 
+export  const getInitialState = () => (initialState);
+
+
 let calculator = {...initialState };
 
 class PizzaStore extends EventEmitter {
